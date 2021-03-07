@@ -15,6 +15,7 @@ class _IndexPageState extends State<IndexPage> {
   String timer = "25:00";
   bool play = false;
   bool volume = true;
+  bool init = false;
   int totalSeconds;
   int displayMinutes;
   String displaySeconds;
@@ -37,6 +38,10 @@ class _IndexPageState extends State<IndexPage> {
   }
 
   void playTimer() {
+    if(currentTime == 0){
+      reset();
+    }
+    init = true;
     interval = Timer.periodic(new Duration(seconds: 1), (timer) {
       setState(() {
         progressbar += 1 / totalSeconds;
@@ -66,24 +71,26 @@ class _IndexPageState extends State<IndexPage> {
   }
 
   void less() {
-    interval.cancel();
-    minutes -= 1;
-    totalSeconds = minutes * 60;
-    setState(() {
-      currentTime = totalSeconds;
-      progressbar = 0;
-      displayMinutes = currentTime ~/ 60;
-      displaySeconds = "0${currentTime % 60}";
-      text = "Minutos";
-    });
+    if (init) interval.cancel();
+    if (minutes > 1) {
+      minutes -= 1;
+      totalSeconds = minutes * 60;
+      setState(() {
+        currentTime = totalSeconds;
+        progressbar = 0;
+        displayMinutes = currentTime ~/ 60;
+        displaySeconds = "0${currentTime % 60}";
+        text = "Minutos";
+      });
+    }
   }
 
   void stop() {
-    interval.cancel();
+    if (init) interval.cancel();
   }
 
   void more() {
-    interval.cancel();
+    if (init) interval.cancel();
     minutes += 1;
     totalSeconds = minutes * 60;
     setState(() {
@@ -96,7 +103,7 @@ class _IndexPageState extends State<IndexPage> {
   }
 
   void reset() {
-    interval.cancel();
+    if (init) interval.cancel();
     totalSeconds = minutes * 60;
     setState(() {
       currentTime = totalSeconds;
@@ -113,25 +120,6 @@ class _IndexPageState extends State<IndexPage> {
     height = size.height;
     width = size.width;
     return Scaffold(
-      appBar: AppBar(actions: [
-        Container(
-          margin: EdgeInsets.only(right: 10),
-          decoration: ShapeDecoration(
-            color: volume ? Colors.blue : Colors.red,
-            shape: CircleBorder(),
-          ),
-          child: IconButton(
-            icon: Icon(volume ? Icons.volume_up : Icons.volume_off),
-            color: Colors.white,
-            onPressed: () {
-              setState(() {
-                volume = !volume;
-              });
-              // TODO
-            },
-          ),
-        ),
-      ], elevation: 0, backgroundColor: Colors.transparent),
       body: bodyPage(),
     );
   }
