@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
@@ -9,9 +11,43 @@ class IndexPage extends StatefulWidget {
 class _IndexPageState extends State<IndexPage> {
   var height;
   var width;
+  int minutes = 1;
   String timer = "25:00";
   bool play = false;
   bool volume = true;
+  int totalSeconds;
+  int displayMinutes;
+  String displaySeconds;
+
+  @override
+  void initState() {
+    super.initState();
+    totalSeconds = minutes * 60;
+    displayMinutes = totalSeconds ~/ 60;
+    int seconds = totalSeconds % 60;
+    if (seconds < 10) {
+      displaySeconds = ("0$seconds");
+    } else {
+      displaySeconds = seconds.toString();
+    }
+  }
+
+  void playTimer() {
+    int totalSecondsPlay = totalSeconds;
+    Timer.periodic(new Duration(seconds: 1), (timer) {
+      //if(totalSeconds == 0) timer.cancel();
+      setState(() {
+        totalSecondsPlay -= 1;
+        displayMinutes = totalSecondsPlay ~/ 60;
+        int seconds = totalSecondsPlay % 60;
+        if (seconds < 10) {
+          displaySeconds = ("0$seconds");
+        } else {
+          displaySeconds = seconds.toString();
+        }
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,40 +83,12 @@ class _IndexPageState extends State<IndexPage> {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        CircularPercentIndicator(
-          radius: height * 0.35,
-          animation: true,
-          animationDuration: 1200,
-          lineWidth: 15.0,
-          percent: 0.5,
-          center: new Text(
-            "$timer Minutes",
-            style: new TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
-          ),
-          circularStrokeCap: CircularStrokeCap.butt,
-          backgroundColor: Colors.yellow,
-          progressColor: Colors.red,
-        ),
+        progressIndicator(),
         SizedBox(height: height * 0.1),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              height: 56,
-              width: 56,
-              margin: EdgeInsets.all(10),
-              decoration: ShapeDecoration(
-                color: Colors.blue,
-                shape: CircleBorder(),
-              ),
-              child: IconButton(
-                icon: Icon(Icons.add),
-                color: Colors.white,
-                onPressed: () {
-                  // TODO
-                },
-              ),
-            ),
+            icons(Icons.add),
             Container(
               height: 56,
               width: 56,
@@ -95,46 +103,52 @@ class _IndexPageState extends State<IndexPage> {
                 onPressed: () {
                   setState(() {
                     play = !play;
-                    // TODO
+                    if(play) playTimer();
                   });
                 },
               ),
             ),
-            Container(
-              height: 56,
-              width: 56,
-              margin: EdgeInsets.all(10),
-              decoration: ShapeDecoration(
-                color: Colors.blue,
-                shape: CircleBorder(),
-              ),
-              child: IconButton(
-                icon: Icon(Icons.replay),
-                color: Colors.white,
-                onPressed: () {
-                  // TODO
-                },
-              ),
-            ),
-            Container(
-              height: 56,
-              width: 56,
-              margin: EdgeInsets.all(10),
-              decoration: ShapeDecoration(
-                color: Colors.blue,
-                shape: CircleBorder(),
-              ),
-              child: IconButton(
-                icon: Icon(Icons.remove),
-                color: Colors.white,
-                onPressed: () {
-                  // TODO
-                },
-              ),
-            ),
+            icons(Icons.replay),
+            icons(Icons.remove),
           ],
         )
       ],
+    );
+  }
+
+  Widget progressIndicator() {
+    return CircularPercentIndicator(
+      radius: height * 0.35,
+      animation: true,
+      animationDuration: 1200,
+      lineWidth: 15.0,
+      percent: 0.5,
+      center: new Text(
+        "$displayMinutes:$displaySeconds Minutes",
+        style: new TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
+      ),
+      circularStrokeCap: CircularStrokeCap.butt,
+      backgroundColor: Colors.yellow,
+      progressColor: Colors.red,
+    );
+  }
+
+  Widget icons(IconData icon) {
+    return Container(
+      height: 56,
+      width: 56,
+      margin: EdgeInsets.all(10),
+      decoration: ShapeDecoration(
+        color: Colors.blue,
+        shape: CircleBorder(),
+      ),
+      child: IconButton(
+        icon: Icon(icon),
+        color: Colors.white,
+        onPressed: () {
+          // TODO
+        },
+      ),
     );
   }
 }
